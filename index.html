@@ -3,28 +3,30 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1515.0.min.js"></script> <!-- Used for interacting with various Amazon Web Services (AWS) from a JavaScript environment. -->
 
-    <script src="https://ajax.googleapis.com/ajaxsadasdawd/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1515.0.min.js"></script>
-
-    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js"></script> <!-- Imports the Amazon Cognito Identity SDK for JavaScript into your application. -->
 
     <script src="node_modules/amazon-cognito-auth-js/dist/amazon-cognito-auth.min.js"></script>
     <script src="node_modules/amazon-cognito-identity-js/dist/amazon-cognito-identity.min.js"></script>
 
     <script src="config.js"></script>
+    <script src="index.js"></script>
 
     <title>My Homepage with Cognito</title>
   </head>
  
   <body>
+    <!-- buttons to alternate between login and register features. 
+      See 'index.js':
+            lines: 2-9 
+    -->
     <button type="button" onclick="openSignIn()">Activate Sign in</button>
     <button type="button" onclick="openSignUp()">Activate Sign up</button>
 
     <div id="root"></div>
   
-    
+    <!-- division tag for the login section -->
     <div id="loginForm" class="myHomepage-login">
       <h1>Welcome, please sign in</h1>
       Username:<br>
@@ -36,7 +38,8 @@
       <button type="button" onclick="SignInFunction()">Login</button>
       <button type="button" onclick="openSignUp()">Sign Up</button>
     </div>
-
+    
+    <!-- division tag for the registration section -->
     <div id="registerForm" class="myHomepage">
       <h1>Welcome, please sign up</h1>
       Username:<br>
@@ -55,115 +58,4 @@
     </div>
   </body>
   <!-- END OF HTML PAGE -->
-
-
-  <script>
-
-    //Navigation from Sign in and Sign up
-    function openSignIn(){
-      document.getElementById("loginForm").style.display = "block";
-      document.getElementById("registerForm").style.display = "none";
-    }
-    function openSignUp(){
-      document.getElementById("registerForm").style.display = "block";
-      document.getElementById("loginForm").style.display = "none";
-    }
-
-    var username;
-    var password;
-    var personalName;
-    var poolData;
-
-
-    //Amazon Cognito Sign up functionality
-    function SignUpFunction() {
-
-      personalName = document.getElementById("personalName").value;    
-      username = document.getElementById("registerEmail").value;
-
-      if (document.getElementById("signUpPassword").value != document.getElementById("passwordConfirm").value) {
-          alert("Passwords Do Not Match!")
-          throw "Passwords Do Not Match!"
-      } else {
-          password = document.getElementById("signUpPassword").value;  
-      }
-
-      poolData = {
-              UserPoolId : _config.cognito.userPoolId, // Your user pool id here
-              ClientId : _config.cognito.clientId // Your client id here
-          };     
-
-      var userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
-
-      var attributeList = [];
-
-      var dataEmail = {
-          Name : 'email',
-          Value : username, //get from form field
-      };
-
-      var dataPersonalName = {
-          Name : 'name',
-          Value : personalName, //get from form field
-      };
-
-      var attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(dataEmail);
-      var attributePersonalName= new AmazonCognitoIdentity.CognitoUserAttribute(dataPersonalName);
-
-
-      attributeList.push(attributeEmail);
-      attributeList.push(attributePersonalName);
-
-
-      userPool.signUp(username, password, attributeList, null, function(err, result){
-          if (err) {
-              alert(err.message || JSON.stringify(err));
-              return;
-          }
-          cognitoUser = result.user;
-          console.log('user name is ' + cognitoUser.getUsername());
-          //change elements of page
-          alert("Check Your Email For Verification");
-      });
-      }
-
-    
-    //Amazon Cognito Sign up functionality
-    function SignInFunction() {
-      var authenticationData = {
-        Username: document.getElementById("loginEmail").value,
-        Password: document.getElementById("SignInpassword").value,
-      };
-
-      var authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails(authenticationData);
-
-      var poolData = {
-        UserPoolId: _config.cognito.userPoolId,
-        ClientId: _config.cognito.clientId,
-      };
-
-      var userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
-
-      var userData = {
-        Username: document.getElementById("loginEmail").value,
-        Pool: userPool,
-      };
-
-      var cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
-
-      cognitoUser.authenticateUser(authenticationDetails, {
-        onSuccess: function (result) {
-          var accessToken = result.getAccessToken().getJwtToken();
-          console.log(accessToken); // Remove this line or use the token as needed
-          document.getElementById("root").innerHTML = "Welcome, " + document.getElementById("loginEmail").value;
-          document.getElementById("loginForm").style.display = "none";
-          document.getElementById("registerForm").style.display = "none";
-        },
-
-        onFailure: function (err) {
-          alert(err.message || JSON.stringify(err));
-        },
-      });
-    }
-</script>
 </html>
